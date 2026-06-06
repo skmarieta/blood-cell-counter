@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+
+  # Redis — хранит очередь задач
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # FastAPI — принимает запросы
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models  # модели доступны внутри контейнера
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+
+  # Celery worker — обрабатывает задачи из очереди
+  celery_worker:
+    build: ./backend
+    volumes:
+      - ./models:/app/models
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    command: celery -A worker worker --loglevel=info
