@@ -1,3 +1,4 @@
-streamlit==1.38.0
-requests==2.32.0
-pillow==10.4.0
+streamlit
+ultralytics
+pillow
+opencv-python-headless
